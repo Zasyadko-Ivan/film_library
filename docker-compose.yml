@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    image: ${name_image}
+    build: ${pwd}
+    working_dir: ${workdir}
+    container_name: ${name_docker}
+    volumes:
+      - ${pwd}:${workdir}
+    ports:
+      - '5555:5000'
+    tty: true
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: root
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
