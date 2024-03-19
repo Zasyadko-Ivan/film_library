@@ -32,6 +32,7 @@ type Storage interface {
 	AddFilm(film Film) error
 	ChangeFilm(film Film) error
 	DeleteFilm(film Film) error
+	GetAllFilms(sortBy string) ([]string, error)
 }
 
 var ErrActorCreated = errors.New("the actor has already been created")

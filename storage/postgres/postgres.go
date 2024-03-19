@@ -311,3 +311,36 @@ func (s *Storage) DeleteFilmActors(actor storage.Actor, film storage.Film) error
 	}
 	return nil
 }
+
+func (s *Storage) GetAllFilms(sortByColoms, direction string) ([]string, error) {
+	var nameFilms []string
+	var q string
+	if sortByColoms == "name" {
+		q = `SELECT name FROM films ORDER BY name`
+	} else if sortByColoms == "released" {
+		q = `SELECT name FROM films ORDER BY released`
+	} else {
+		q = `SELECT name FROM films ORDER BY rating`
+	}
+
+	if direction == "ASC" {
+		q += ` ASC;`
+	} else {
+		q += ` DESC;`
+	}
+
+	rows, err := s.db.Query(q)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		nameFilms = append(nameFilms, name)
+	}
+
+	return nameFilms, nil
+}
