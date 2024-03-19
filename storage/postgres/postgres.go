@@ -390,3 +390,36 @@ func (s *Storage) GetFilmsByNameАctor(nameActor string) ([]string, error) {
 
 	return nameFilms, nil
 }
+
+func (s *Storage) GetAllActorOutFilms() (map[string][]string, error) {
+	log.Print("[INF] start of the function execution GetAllActorOutFilms")
+	actorFilms := make(map[string][]string)
+	q := `
+	SELECT a.name AS actor_name, f.name AS film_name
+	FROM actors a
+	LEFT JOIN films f ON a.id = ANY(f.list_actors)
+	ORDER BY a.name;
+	`
+
+	rows, err := s.db.Query(q)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var actorName, filmName sql.NullString
+		if err := rows.Scan(&actorName, &filmName); err != nil {
+			return nil, err
+		}
+
+		if filmName.Valid {
+			actorFilms[actorName.String] = append(actorFilms[actorName.String], filmName.String)
+		} else {
+			actorFilms[actorName.String] = []string{""}
+		}
+
+	}
+
+	return actorFilms, nil
+
+}
