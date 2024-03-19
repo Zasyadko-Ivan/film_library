@@ -313,6 +313,7 @@ func (s *Storage) DeleteFilmActors(actor storage.Actor, film storage.Film) error
 }
 
 func (s *Storage) GetAllFilms(sortByColoms, direction string) ([]string, error) {
+	log.Print("[INF] start of the function execution GetAllFilms")
 	var nameFilms []string
 	var q string
 	if sortByColoms == "name" {
