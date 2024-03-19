@@ -345,3 +345,26 @@ func (s *Storage) GetAllFilms(sortByColoms, direction string) ([]string, error) 
 
 	return nameFilms, nil
 }
+
+func (s *Storage) GetFilmsByNameFilm(nameFilm string) ([]string, error) {
+	log.Print("[INF] start of the function execution GetFilmsByNameFilm")
+
+	var nameFilms []string
+
+	q := `SELECT name FROM films WHERE name LIKE '%' || $1 || '%';`
+
+	rows, err := s.db.Query(q, nameFilm)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		nameFilms = append(nameFilms, name)
+	}
+
+	return nameFilms, nil
+}
