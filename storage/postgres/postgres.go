@@ -368,3 +368,25 @@ func (s *Storage) GetFilmsByNameFilm(nameFilm string) ([]string, error) {
 
 	return nameFilms, nil
 }
+
+func (s *Storage) GetFilmsByNameАctor(nameActor string) ([]string, error) {
+	log.Print("[INF] start of the function execution GetFilmsByNameАctor")
+
+	var nameFilms []string
+	q := `SELECT DISTINCT f.name FROM films f JOIN actors a ON a.id = ANY(f.list_actors) WHERE a.name LIKE '%' || $1 || '%';`
+
+	rows, err := s.db.Query(q, nameActor)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		nameFilms = append(nameFilms, name)
+	}
+
+	return nameFilms, nil
+}
