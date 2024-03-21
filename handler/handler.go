@@ -18,6 +18,11 @@ func (ah *AppHandler) AddActor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if actor.Name == "" || actor.Gender == "" || actor.Birthday == "" {
+		http.Error(w, "Required fields (name, gender, birthday) are missing", http.StatusBadRequest)
+		return
+	}
+
 	_, err := time.Parse("02-01-2006", actor.Birthday)
 	if err != nil {
 		http.Error(w, "Invalid birthday format. Please use DD-MM-YYYY", http.StatusBadRequest)
