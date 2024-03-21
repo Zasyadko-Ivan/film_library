@@ -32,7 +32,7 @@ type Storage interface {
 	AddFilm(film Film) error
 	ChangeFilm(film Film) error
 	DeleteFilm(film Film) error
-	GetAllFilms(sortBy string) ([]string, error)
+	GetAllFilms(sortByColoms, direction string) ([]string, error)
 	GetFilmsByNameFilm(nameFilm string) ([]string, error)
 	GetFilmsByNameАctor(nameActor string) ([]string, error)
 	GetAllActorOutFilms() (map[string][]string, error)
