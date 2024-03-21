@@ -1,9 +1,11 @@
 package main
 
 import (
+	"film_library/handler"
 	"film_library/storage/postgres"
 	"fmt"
 	"log"
+	"net/http"
 )
 
 const (
@@ -26,4 +28,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	appHandler := handler.AppHandler{DB: db}
+
+	http.HandleFunc("/actors/create", appHandler.AddActor)
+
+	http.ListenAndServe(":5000", nil)
+
 }
