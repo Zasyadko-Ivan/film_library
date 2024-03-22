@@ -68,7 +68,7 @@ func (s *Storage) ChangeActor(actor storage.Actor, logNumber int) error {
 	if !exists {
 		return storage.ErrActorNotCreated
 	}
-	log.Println(actor)
+
 	if actor.ReplaceName == "" {
 		actor.ReplaceName = actor.Name
 	}
@@ -79,10 +79,20 @@ func (s *Storage) ChangeActor(actor storage.Actor, logNumber int) error {
 		actor.ReplaceBirthday = actor.Birthday
 	}
 
+	exists, err = s.checkActor(actor.ReplaceName, actor.ReplaceGender, actor.ReplaceBirthday, logNumber)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return storage.ErrActorCreated
+	}
+
 	q := `UPDATE actors SET name = $1, gender = $2, birthday = $3 WHERE name = $4 AND gender = $5 AND birthday = $6;`
 	if _, err := s.db.Exec(q, actor.ReplaceName, actor.ReplaceGender, actor.ReplaceBirthday, actor.Name, actor.Gender, actor.Birthday); err != nil {
 		return e.Wrap(logNumber, "can't update actors to database", err)
 	}
+
 	return nil
 }
 

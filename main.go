@@ -32,6 +32,7 @@ func main() {
 
 	http.HandleFunc("/actors/create", appHandler.AddActor)
 	http.HandleFunc("/actors/delete", appHandler.DeleteActor)
+	http.HandleFunc("/actors/change", appHandler.ChangeActor)
 
 	http.ListenAndServe(":5000", nil)
 
