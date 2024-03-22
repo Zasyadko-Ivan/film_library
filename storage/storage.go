@@ -6,9 +6,9 @@ type Actor struct {
 	Name            string `json:"name_actor"`
 	Gender          string `json:"gender"`
 	Birthday        string `json:"birthday"`
-	ReplaceName     string `json:"replace_name_actor"`
-	ReplaceGender   string `json:"replace_gender"`
-	ReplaceBirthday string `json:"replace_birthday"`
+	ReplaceName     string `json:"replace_name_actor,omitempty"`
+	ReplaceGender   string `json:"replace_gender,omitempty"`
+	ReplaceBirthday string `json:"replace_birthday,omitempty"`
 }
 
 type Film struct {
@@ -17,10 +17,10 @@ type Film struct {
 	Description        string  `json:"description"`
 	Rating             float32 `json:"rating"`
 	ReleaseDate        string  `json:"release_date"`
-	ReplaceName        string  `json:"replace_name_film"`
-	ReplaceDescription string  `json:"replace_description"`
-	ReplaceRating      float32 `json:"replace_rating"`
-	ReplaceReleaseDate string  `json:"replace_release_date"`
+	ReplaceName        string  `json:"replace_name_film,omitempty"`
+	ReplaceDescription string  `json:"replace_description,omitempty"`
+	ReplaceRating      float32 `json:"replace_rating,omitempty"`
+	ReplaceReleaseDate string  `json:"replace_release_date,omitempty"`
 }
 
 type Storage interface {
