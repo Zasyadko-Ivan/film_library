@@ -56,7 +56,7 @@ func (ah *AppHandler) AddActor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(actor)
+	fmt.Fprint(w, "Actor successfully create")
 }
 
 func (ah *AppHandler) DeleteActor(w http.ResponseWriter, r *http.Request) {
