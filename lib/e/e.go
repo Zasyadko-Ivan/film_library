@@ -2,13 +2,9 @@ package e
 
 import "fmt"
 
-func Wrap(msg string, err error) error {
-	return fmt.Errorf("[ERR] %s: %w", msg, err)
-}
-
-func WrapIfErr(msg string, err error) error {
+func Wrap(logNumber int, msg string, err error) error {
 	if err == nil {
-		return nil
+		return fmt.Errorf("[WAR] [%d] %s", logNumber, msg)
 	}
-	return Wrap(msg, err)
+	return fmt.Errorf("[ERR] [%d] %s: %w", logNumber, msg, err)
 }

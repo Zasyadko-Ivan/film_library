@@ -24,18 +24,18 @@ type Film struct {
 }
 
 type Storage interface {
-	AddActor(actor Actor) error
-	ChangeActor(actor Actor) error
-	DeleteActor(actor Actor) error
-	AddFilmActors(actor Actor, film Film) error
-	DeleteFilmActors(actor Actor, film Film) error
-	AddFilm(film Film) error
-	ChangeFilm(film Film) error
-	DeleteFilm(film Film) error
-	GetAllFilms(sortByColoms, direction string) ([]string, error)
-	GetFilmsByNameFilm(nameFilm string) ([]string, error)
-	GetFilmsByNameАctor(nameActor string) ([]string, error)
-	GetAllActorOutFilms() (map[string][]string, error)
+	AddActor(actor Actor, logNumber int) error
+	ChangeActor(actor Actor, logNumber int) error
+	DeleteActor(actor Actor, logNumber int) error
+	AddFilmActors(actor Actor, film Film, logNumber int) error
+	DeleteFilmActors(actor Actor, film Film, logNumber int) error
+	AddFilm(film Film, logNumber int) error
+	ChangeFilm(film Film, logNumber int) error
+	DeleteFilm(film Film, logNumber int) error
+	GetAllFilms(sortByColoms, direction string, logNumber int) ([]string, error)
+	GetFilmsByNameFilm(nameFilm string, logNumber int) ([]string, error)
+	GetFilmsByNameАctor(nameActor string, logNumber int) ([]string, error)
+	GetAllActorOutFilms(logNumber int) (map[string][]string, error)
 }
 
 var ErrActorCreated = errors.New("the actor has already been created")

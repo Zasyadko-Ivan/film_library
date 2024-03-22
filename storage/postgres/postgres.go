@@ -14,14 +14,16 @@ type Storage struct {
 	db *sql.DB
 }
 
+var start int = 100000
+
 func ConnectToDB(connStr string) (*Storage, error) {
 	log.Print("[INF] getting started connecting to the table")
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		return nil, e.Wrap("can't open database", err)
+		return nil, e.Wrap(start, "can't open database", err)
 	}
 	if err := db.Ping(); err != nil {
-		return nil, e.Wrap("can't connect to database", err)
+		return nil, e.Wrap(start, "can't connect to database", err)
 	}
 
 	return &Storage{db: db}, nil
@@ -34,15 +36,14 @@ func (s *Storage) Init() error {
 		CREATE TABLE IF NOT EXISTS films (id SERIAL PRIMARY KEY, name VARCHAR(150), description VARCHAR(1000), released DATE, rating DECIMAL(5,2), list_actors INTEGER[]);`
 
 	if _, err := s.db.Exec(q); err != nil {
-		return e.Wrap("can't create table", err)
+		return e.Wrap(start, "can't create table", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) AddActor(actor storage.Actor) error {
-	log.Print("[INF] start of the function execution AddActor")
-	exists, err := s.checkActor(actor.Name, actor.Gender, actor.Birthday)
+func (s *Storage) AddActor(actor storage.Actor, logNumber int) error {
+	exists, err := s.checkActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
 	if err != nil {
 		return err
 	}
@@ -53,14 +54,13 @@ func (s *Storage) AddActor(actor storage.Actor) error {
 
 	q := `INSERT INTO actors (name, gender, birthday) VALUES($1, $2, $3);`
 	if _, err := s.db.Exec(q, actor.Name, actor.Gender, actor.Birthday); err != nil {
-		return e.Wrap("can't add actor to database", err)
+		return e.Wrap(logNumber, "can't add actor to database", err)
 	}
 	return nil
 }
 
-func (s *Storage) ChangeActor(actor storage.Actor) error {
-	log.Print("[INF] start of the function execution ChangeActor")
-	exists, err := s.checkActor(actor.Name, actor.Gender, actor.Birthday)
+func (s *Storage) ChangeActor(actor storage.Actor, logNumber int) error {
+	exists, err := s.checkActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
 	if err != nil {
 		return err
 	}
@@ -81,14 +81,13 @@ func (s *Storage) ChangeActor(actor storage.Actor) error {
 
 	q := `UPDATE actors SET name = $1, gender = $2, birthday = $3 WHERE name = $4 AND gender = $5 AND birthday = $6;`
 	if _, err := s.db.Exec(q, actor.ReplaceName, actor.ReplaceGender, actor.ReplaceBirthday, actor.Name, actor.Gender, actor.Birthday); err != nil {
-		return e.Wrap("can't update actors to database", err)
+		return e.Wrap(logNumber, "can't update actors to database", err)
 	}
 	return nil
 }
 
-func (s *Storage) DeleteActor(actor storage.Actor) error {
-	log.Print("[INF] start of the function execution DeleteActor")
-	exists, err := s.checkActor(actor.Name, actor.Gender, actor.Birthday)
+func (s *Storage) DeleteActor(actor storage.Actor, logNumber int) error {
+	exists, err := s.checkActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
 	if err != nil {
 		return err
 	}
@@ -97,36 +96,36 @@ func (s *Storage) DeleteActor(actor storage.Actor) error {
 		return storage.ErrActorNotCreated
 	}
 
-	id, err := s.idActor(actor.Name, actor.Gender, actor.Birthday)
+	id, err := s.idActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
 	if err != nil {
 		return err
 	}
 
 	tx, err := s.db.Begin()
 	if err != nil {
-		return e.Wrap("can't start transaction", err)
+		return e.Wrap(logNumber, "can't start transaction", err)
 	}
 
 	q := `UPDATE films SET list_actors = array_remove(list_actors, $1)`
 	if _, err := tx.Exec(q, id); err != nil {
 		tx.Rollback()
-		return e.Wrap("can't update films table", err)
+		return e.Wrap(logNumber, "can't update films table", err)
 	}
 
 	q = `DELETE FROM actors WHERE name = $1 AND gender = $2 AND birthday = $3`
 	if _, err := tx.Exec(q, actor.Name, actor.Gender, actor.Birthday); err != nil {
 		tx.Rollback()
-		return e.Wrap("can't delete actor from actors table", err)
+		return e.Wrap(logNumber, "can't delete actor from actors table", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return e.Wrap("can't commit transaction", err)
+		return e.Wrap(logNumber, "can't commit transaction", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) checkActor(name string, gender string, birthday string) (bool, error) {
+func (s *Storage) checkActor(name string, gender string, birthday string, logNumber int) (bool, error) {
 	q := `SELECT id FROM actors WHERE name = $1 AND gender = $2 AND birthday = $3;`
 	var id int
 
@@ -137,15 +136,14 @@ func (s *Storage) checkActor(name string, gender string, birthday string) (bool,
 	}
 
 	if err != nil {
-		return false, e.Wrap("can't check actor to database", err)
+		return false, e.Wrap(logNumber, "can't check actor to database", err)
 	}
 
 	return true, nil
 }
 
-func (s *Storage) AddFilm(film storage.Film) error {
-	log.Print("[INF] start of the function execution AddFilm")
-	exists, err := s.checkFilm(film.Name, film.ReleaseDate)
+func (s *Storage) AddFilm(film storage.Film, logNumber int) error {
+	exists, err := s.checkFilm(film.Name, film.ReleaseDate, logNumber)
 	if err != nil {
 		return err
 	}
@@ -157,7 +155,7 @@ func (s *Storage) AddFilm(film storage.Film) error {
 	idActors := make([]int, 0, len(film.Actors))
 
 	for i := 0; i < len(film.Actors); i++ {
-		id, err := s.idActor(film.Actors[i].Name, film.Actors[i].Gender, film.Actors[i].Birthday)
+		id, err := s.idActor(film.Actors[i].Name, film.Actors[i].Gender, film.Actors[i].Birthday, logNumber)
 		if err != nil {
 			return err
 		}
@@ -167,14 +165,13 @@ func (s *Storage) AddFilm(film storage.Film) error {
 	q := `INSERT INTO films (name, description, released, rating, list_actors) VALUES($1, $2, $3, $4, $5);`
 
 	if _, err := s.db.Exec(q, film.Name, film.Description, film.ReleaseDate, film.Rating, pq.Array(idActors)); err != nil {
-		return e.Wrap("can't add film to database", err)
+		return e.Wrap(logNumber, "can't add film to database", err)
 	}
 	return nil
 }
 
-func (s *Storage) ChangeFilm(film storage.Film) error {
-	log.Print("[INF] start of the function execution ChangeFilm")
-	exists, err := s.checkFilm(film.Name, film.ReleaseDate)
+func (s *Storage) ChangeFilm(film storage.Film, logNumber int) error {
+	exists, err := s.checkFilm(film.Name, film.ReleaseDate, logNumber)
 	if err != nil {
 		return err
 	}
@@ -198,15 +195,14 @@ func (s *Storage) ChangeFilm(film storage.Film) error {
 
 	q := `UPDATE films SET name = $1, description = $2, released = $3, rating = $4 WHERE name = $5 AND released = $6;`
 	if _, err := s.db.Exec(q, film.ReplaceName, film.ReplaceDescription, film.ReplaceReleaseDate, film.ReplaceRating, film.Name, film.ReleaseDate); err != nil {
-		return e.Wrap("can't update actors to database", err)
+		return e.Wrap(logNumber, "can't update actors to database", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) DeleteFilm(film storage.Film) error {
-	log.Print("[INF] start of the function execution DeleteFilm")
-	exists, err := s.checkFilm(film.Name, film.ReleaseDate)
+func (s *Storage) DeleteFilm(film storage.Film, logNumber int) error {
+	exists, err := s.checkFilm(film.Name, film.ReleaseDate, logNumber)
 	if err != nil {
 		return err
 	}
@@ -217,12 +213,12 @@ func (s *Storage) DeleteFilm(film storage.Film) error {
 
 	q := `DELETE FROM films WHERE name = $1 AND released = $2;`
 	if _, err := s.db.Exec(q, film.Name, film.ReleaseDate); err != nil {
-		return e.Wrap("can't delete actor to database", err)
+		return e.Wrap(logNumber, "can't delete actor to database", err)
 	}
 	return nil
 }
 
-func (s *Storage) checkFilm(name string, released string) (bool, error) {
+func (s *Storage) checkFilm(name string, released string, logNumber int) (bool, error) {
 	q := `SELECT id FROM films WHERE name = $1 AND released = $2;`
 	var id int
 
@@ -233,26 +229,25 @@ func (s *Storage) checkFilm(name string, released string) (bool, error) {
 	}
 
 	if err != nil {
-		return false, e.Wrap("can't check film to database", err)
+		return false, e.Wrap(logNumber, "can't check film to database", err)
 	}
 
 	return true, nil
 }
 
-func (s *Storage) idActor(name string, gender string, birthday string) (int, error) {
+func (s *Storage) idActor(name string, gender string, birthday string, logNumber int) (int, error) {
 	q := `SELECT id FROM actors WHERE name = $1 AND gender = $2 AND birthday = $3;`
 	var id int
 	err := s.db.QueryRow(q, name, gender, birthday).Scan(&id)
 	if err != nil {
-		return id, e.Wrap("can't check actor to database", err)
+		return id, e.Wrap(logNumber, "can't check actor to database", err)
 	}
 
 	return id, nil
 }
 
-func (s *Storage) AddFilmActors(actor storage.Actor, film storage.Film) error {
-	log.Print("[INF] start of the function execution AddFilmActors")
-	exists, err := s.checkFilm(film.Name, film.ReleaseDate)
+func (s *Storage) AddFilmActors(actor storage.Actor, film storage.Film, logNumber int) error {
+	exists, err := s.checkFilm(film.Name, film.ReleaseDate, logNumber)
 	if err != nil {
 		return err
 	}
@@ -261,7 +256,7 @@ func (s *Storage) AddFilmActors(actor storage.Actor, film storage.Film) error {
 		return storage.ErrFilmNotCreated
 	}
 
-	id_actor, err := s.idActor(actor.Name, actor.Gender, actor.Birthday)
+	id_actor, err := s.idActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
 	if err != nil {
 		return err
 	}
@@ -281,9 +276,8 @@ func (s *Storage) AddFilmActors(actor storage.Actor, film storage.Film) error {
 	return nil
 }
 
-func (s *Storage) DeleteFilmActors(actor storage.Actor, film storage.Film) error {
-	log.Print("[INF] start of the function execution DeleteFilmActors")
-	exists, err := s.checkFilm(film.Name, film.ReleaseDate)
+func (s *Storage) DeleteFilmActors(actor storage.Actor, film storage.Film, logNumber int) error {
+	exists, err := s.checkFilm(film.Name, film.ReleaseDate, logNumber)
 	if err != nil {
 		return err
 	}
@@ -292,7 +286,7 @@ func (s *Storage) DeleteFilmActors(actor storage.Actor, film storage.Film) error
 		return storage.ErrFilmNotCreated
 	}
 
-	id_actor, err := s.idActor(actor.Name, actor.Gender, actor.Birthday)
+	id_actor, err := s.idActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
 	if err != nil {
 		return err
 	}
@@ -307,15 +301,15 @@ func (s *Storage) DeleteFilmActors(actor storage.Actor, film storage.Film) error
 	addQuery := `UPDATE films SET list_actors = array_remove(list_actors, $1) WHERE id = $2;`
 	_, err = s.db.Exec(addQuery, id_actor, id_film)
 	if err != nil {
-		return err
+		return e.Wrap(logNumber, "the film is not in the database", err)
 	}
 	return nil
 }
 
-func (s *Storage) GetAllFilms(sortByColoms, direction string) ([]string, error) {
-	log.Print("[INF] start of the function execution GetAllFilms")
+func (s *Storage) GetAllFilms(sortByColoms, direction string, logNumber int) ([]string, error) {
 	var nameFilms []string
 	var q string
+
 	if sortByColoms == "name" {
 		q = `SELECT name FROM films ORDER BY name`
 	} else if sortByColoms == "released" {
@@ -332,13 +326,13 @@ func (s *Storage) GetAllFilms(sortByColoms, direction string) ([]string, error) 
 
 	rows, err := s.db.Query(q)
 	if err != nil {
-		return nil, err
+		return nil, e.Wrap(logNumber, "error in the database when executing the 'GetAllFilms' query", err)
 	}
 	for rows.Next() {
 		var name string
 		err := rows.Scan(&name)
 		if err != nil {
-			return nil, err
+			return nil, e.Wrap(logNumber, "error in the database when executing the 'GetAllFilms' query", err)
 		}
 		nameFilms = append(nameFilms, name)
 	}
@@ -346,22 +340,20 @@ func (s *Storage) GetAllFilms(sortByColoms, direction string) ([]string, error) 
 	return nameFilms, nil
 }
 
-func (s *Storage) GetFilmsByNameFilm(nameFilm string) ([]string, error) {
-	log.Print("[INF] start of the function execution GetFilmsByNameFilm")
-
+func (s *Storage) GetFilmsByNameFilm(nameFilm string, logNumber int) ([]string, error) {
 	var nameFilms []string
 
 	q := `SELECT name FROM films WHERE name LIKE '%' || $1 || '%';`
 
 	rows, err := s.db.Query(q, nameFilm)
 	if err != nil {
-		return nil, err
+		return nil, e.Wrap(logNumber, "error in the database when executing the 'GetFilmsByNameFilm' query", err)
 	}
 	for rows.Next() {
 		var name string
 		err := rows.Scan(&name)
 		if err != nil {
-			return nil, err
+			return nil, e.Wrap(logNumber, "error in the database when executing the 'GetFilmsByNameFilm' query", err)
 		}
 		nameFilms = append(nameFilms, name)
 	}
@@ -369,21 +361,19 @@ func (s *Storage) GetFilmsByNameFilm(nameFilm string) ([]string, error) {
 	return nameFilms, nil
 }
 
-func (s *Storage) GetFilmsByNameАctor(nameActor string) ([]string, error) {
-	log.Print("[INF] start of the function execution GetFilmsByNameАctor")
-
+func (s *Storage) GetFilmsByNameАctor(nameActor string, logNumber int) ([]string, error) {
 	var nameFilms []string
 	q := `SELECT DISTINCT f.name FROM films f JOIN actors a ON a.id = ANY(f.list_actors) WHERE a.name LIKE '%' || $1 || '%';`
 
 	rows, err := s.db.Query(q, nameActor)
 	if err != nil {
-		return nil, err
+		return nil, e.Wrap(logNumber, "error in the database when executing the 'GetFilmsByNameАctor' query", err)
 	}
 	for rows.Next() {
 		var name string
 		err := rows.Scan(&name)
 		if err != nil {
-			return nil, err
+			return nil, e.Wrap(logNumber, "error in the database when executing the 'GetFilmsByNameАctor' query", err)
 		}
 		nameFilms = append(nameFilms, name)
 	}
@@ -391,8 +381,7 @@ func (s *Storage) GetFilmsByNameАctor(nameActor string) ([]string, error) {
 	return nameFilms, nil
 }
 
-func (s *Storage) GetAllActorOutFilms() (map[string][]string, error) {
-	log.Print("[INF] start of the function execution GetAllActorOutFilms")
+func (s *Storage) GetAllActorOutFilms(logNumber int) (map[string][]string, error) {
 	actorFilms := make(map[string][]string)
 	q := `
 	SELECT a.name AS actor_name, f.name AS film_name
@@ -403,13 +392,13 @@ func (s *Storage) GetAllActorOutFilms() (map[string][]string, error) {
 
 	rows, err := s.db.Query(q)
 	if err != nil {
-		return nil, err
+		return nil, e.Wrap(logNumber, "error in the database when executing the 'GetAllActorOutFilms' query", err)
 	}
 
 	for rows.Next() {
 		var actorName, filmName sql.NullString
 		if err := rows.Scan(&actorName, &filmName); err != nil {
-			return nil, err
+			return nil, e.Wrap(logNumber, "error in the database when executing the 'GetAllActorOutFilms' query", err)
 		}
 
 		if filmName.Valid {
