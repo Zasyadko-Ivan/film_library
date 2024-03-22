@@ -71,6 +71,13 @@ func (ah *AppHandler) DeleteActor(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[INF] [%d] the 'DeleteActor' handler has started to run", logNumber)
 	defer log.Printf("[INF] [%d] the 'DeleteActor' handler has finished executing", logNumber)
+
+	if r.Method != http.MethodDelete {
+		log.Printf("[ERR] [%d] The request method must be DELETE", logNumber)
+		http.Error(w, "The request method must be DELETE", http.StatusMethodNotAllowed)
+		return
+	}
+
 	var actor storage.Actor
 	if err := json.NewDecoder(r.Body).Decode(&actor); err != nil {
 		log.Print(e.Wrap(logNumber, "failed to decode json", err))
