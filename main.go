@@ -30,9 +30,9 @@ func main() {
 	}
 	appHandler := handler.AppHandler{DB: db}
 
-	http.HandleFunc("/actors/create", appHandler.AddActor)
-	http.HandleFunc("/actors/delete", appHandler.DeleteActor)
-	http.HandleFunc("/actors/change", appHandler.ChangeActor)
+	http.HandleFunc("/actor/create", appHandler.AddActor)
+	http.HandleFunc("/actor/delete", appHandler.DeleteActor)
+	http.HandleFunc("/actor/change", appHandler.ChangeActor)
 
 	http.ListenAndServe(":5000", nil)
 
