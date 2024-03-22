@@ -24,6 +24,13 @@ func (ah *AppHandler) AddActor(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[INF] [%d] the 'AddActor' handler has started to run", logNumber)
 	defer log.Printf("[INF] [%d] the 'AddActor' handler has finished executing", logNumber)
+
+	if r.Method != http.MethodPost {
+		log.Printf("[ERR] [%d] The request method must be POST", logNumber)
+		http.Error(w, "The request method must be POST", http.StatusMethodNotAllowed)
+		return
+	}
+
 	var actor storage.Actor
 	if err := json.NewDecoder(r.Body).Decode(&actor); err != nil {
 		log.Print(e.Wrap(logNumber, "failed to decode json", err))
