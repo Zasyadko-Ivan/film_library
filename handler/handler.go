@@ -111,6 +111,13 @@ func (ah *AppHandler) ChangeActor(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[INF] [%d] the 'ChangeActor' handler has started to run", logNumber)
 	defer log.Printf("[INF] [%d] the 'ChangeActor' handler has finished executing", logNumber)
+
+	if r.Method != http.MethodPut {
+		log.Printf("[ERR] [%d] The request method must be PUT", logNumber)
+		http.Error(w, "The request method must be PUT", http.StatusMethodNotAllowed)
+		return
+	}
+
 	var actor storage.Actor
 	if err := json.NewDecoder(r.Body).Decode(&actor); err != nil {
 		log.Print(e.Wrap(logNumber, "failed to decode json", err))
