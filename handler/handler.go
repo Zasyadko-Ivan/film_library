@@ -440,3 +440,37 @@ func (ah *AppHandler) DeleteFilmActors(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "All the actors have been removed to the film")
 }
+
+func (ah *AppHandler) GetAllFilms(w http.ResponseWriter, r *http.Request) {
+	logNumber := genRandomNumber()
+
+	log.Printf("[INF] [%d] the 'GetAllFilms' handler has started to run", logNumber)
+	defer log.Printf("[INF] [%d] the 'GetAllFilms' handler has finished executing", logNumber)
+
+	if r.Method != http.MethodGet {
+		log.Printf("[ERR] [%d] The request method must be GET", logNumber)
+		http.Error(w, "The request method must be GET", http.StatusMethodNotAllowed)
+		return
+	}
+	url := r.URL
+	args := url.Query()
+
+	sortByColoms := args.Get("sortByColoms")
+	direction := args.Get("direction")
+
+	log.Printf("[INF] [%d] start of the function execution GetAllFilms", logNumber)
+	defer log.Printf("[INF] [%d] end of the function execution GetAllFilms", logNumber)
+
+	films, err := ah.DB.GetAllFilms(sortByColoms, direction, logNumber)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	nameFilms := make(map[string][]string)
+	nameFilms["name_films"] = films
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(nameFilms)
+}
