@@ -374,17 +374,14 @@ func (ah *AppHandler) AddFilmActors(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[INF] [%d] start of the function execution AddFilmActors", logNumber)
 	defer log.Printf("[INF] [%d] end of the function execution AddFilmActors", logNumber)
 
-	for _, actor := range film.Actors {
-		if err := ah.DB.AddFilmActors(actor, film, logNumber); err == storage.ErrFilmNotCreated {
-			log.Print(e.Wrap(logNumber, "the film is not in the database", storage.ErrFilmNotCreated))
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		} else if err != nil {
-			log.Print(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
+	if err := ah.DB.AddFilmActors(film.Actors, film, logNumber); err == storage.ErrFilmNotCreated {
+		log.Print(e.Wrap(logNumber, "the film is not in the database", storage.ErrFilmNotCreated))
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	} else if err != nil {
+		log.Print(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

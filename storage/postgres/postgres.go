@@ -262,7 +262,7 @@ func (s *Storage) idActor(name string, gender string, birthday string, logNumber
 	return id, nil
 }
 
-func (s *Storage) AddFilmActors(actor storage.Actor, film storage.Film, logNumber int) error {
+func (s *Storage) AddFilmActors(actors []storage.Actor, film storage.Film, logNumber int) error {
 	exists, err := s.checkFilm(film.Name, film.ReleaseDate, logNumber)
 	if err != nil {
 		return err
@@ -272,22 +272,37 @@ func (s *Storage) AddFilmActors(actor storage.Actor, film storage.Film, logNumbe
 		return storage.ErrFilmNotCreated
 	}
 
-	id_actor, err := s.idActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
-	if err != nil {
-		return err
-	}
-	var id_film int
+	tx, err := s.db.Begin()
 
-	existQuery := `SELECT id FROM films WHERE $1 = ANY(list_actors) AND name = $2 AND released = $3;`
-	err = s.db.QueryRow(existQuery, id_actor, film.Name, film.ReleaseDate).Scan(&id_film)
-	if err != sql.ErrNoRows {
-		return nil
+	if err != nil {
+		return e.Wrap(logNumber, "can't start transaction", err)
 	}
 
-	addQuery := `UPDATE films SET list_actors = array_append(list_actors, $1) WHERE name = $2 AND released = $3;`
-	_, err = s.db.Exec(addQuery, id_actor, film.Name, film.ReleaseDate)
-	if err != nil {
-		return err
+	for _, actor := range actors {
+		id_actor, err := s.idActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		var id_film int
+
+		existQuery := `SELECT id FROM films WHERE $1 = ANY(list_actors) AND name = $2 AND released = $3;`
+		err = tx.QueryRow(existQuery, id_actor, film.Name, film.ReleaseDate).Scan(&id_film)
+		if err != sql.ErrNoRows {
+			tx.Rollback()
+			return nil
+		}
+
+		addQuery := `UPDATE films SET list_actors = array_append(list_actors, $1) WHERE name = $2 AND released = $3;`
+		_, err = tx.Exec(addQuery, id_actor, film.Name, film.ReleaseDate)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return e.Wrap(logNumber, "can't commit transaction", err)
 	}
 	return nil
 }

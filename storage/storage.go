@@ -26,7 +26,7 @@ type Storage interface {
 	AddActor(actor Actor, logNumber int) error
 	ChangeActor(actor Actor, logNumber int) error
 	DeleteActor(actor Actor, logNumber int) error
-	AddFilmActors(actor Actor, film Film, logNumber int) error
+	AddFilmActors(actor []Actor, film Film, logNumber int) error
 	DeleteFilmActors(actor Actor, film Film, logNumber int) error
 	AddFilm(film Film, logNumber int) error
 	ChangeFilm(film Film, logNumber int) error
