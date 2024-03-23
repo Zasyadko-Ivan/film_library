@@ -39,6 +39,7 @@ func main() {
 	http.HandleFunc("/film/add/actors", appHandler.AddFilmActors)
 	http.HandleFunc("/film/remove/actors", appHandler.DeleteFilmActors)
 	http.HandleFunc("/films", appHandler.GetAllFilms)
+	http.HandleFunc("/films/name/film", appHandler.GetFilmsByNameFilm)
 
 	http.ListenAndServe(":5000", nil)
 
