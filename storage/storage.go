@@ -17,7 +17,6 @@ type Film struct {
 	Description        string  `json:"description"`
 	Rating             string  `json:"rating"`
 	ReleaseDate        string  `json:"release_date"`
-	ReplaceName        string  `json:"replace_name_film,omitempty"`
 	ReplaceDescription string  `json:"replace_description,omitempty"`
 	ReplaceRating      string  `json:"replace_rating,omitempty"`
 	ReplaceReleaseDate string  `json:"replace_release_date,omitempty"`

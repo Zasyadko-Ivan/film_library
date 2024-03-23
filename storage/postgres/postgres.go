@@ -190,9 +190,15 @@ func (s *Storage) ChangeFilm(film storage.Film, logNumber int) error {
 		return storage.ErrFilmNotCreated
 	}
 
-	if film.ReplaceName == "" {
-		film.ReplaceName = film.Name
+	exists, err = s.checkFilm(film.Name, film.ReplaceReleaseDate, logNumber)
+	if err != nil {
+		return err
 	}
+
+	if exists {
+		return storage.ErrFilmCreated
+	}
+
 	if film.ReplaceReleaseDate == "" {
 		film.ReplaceReleaseDate = film.ReleaseDate
 	}
@@ -203,9 +209,9 @@ func (s *Storage) ChangeFilm(film storage.Film, logNumber int) error {
 		film.ReplaceRating = film.Rating
 	}
 
-	q := `UPDATE films SET name = $1, description = $2, released = $3, rating = $4 WHERE name = $5 AND released = $6;`
-	if _, err := s.db.Exec(q, film.ReplaceName, film.ReplaceDescription, film.ReplaceReleaseDate, film.ReplaceRating, film.Name, film.ReleaseDate); err != nil {
-		return e.Wrap(logNumber, "can't update actors to database", err)
+	q := `UPDATE films SET description = $1, released = $2, rating = $3 WHERE name = $4 AND released = $5;`
+	if _, err := s.db.Exec(q, film.ReplaceDescription, film.ReplaceReleaseDate, film.ReplaceRating, film.Name, film.ReleaseDate); err != nil {
+		return e.Wrap(logNumber, "can't update films to database", err)
 	}
 
 	return nil
@@ -223,7 +229,7 @@ func (s *Storage) DeleteFilm(film storage.Film, logNumber int) error {
 
 	q := `DELETE FROM films WHERE name = $1 AND released = $2;`
 	if _, err := s.db.Exec(q, film.Name, film.ReleaseDate); err != nil {
-		return e.Wrap(logNumber, "can't delete actor to database", err)
+		return e.Wrap(logNumber, "can't delete film to database", err)
 	}
 	return nil
 }
