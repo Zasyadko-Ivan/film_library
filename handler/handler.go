@@ -281,3 +281,60 @@ func (ah *AppHandler) ChangeFilm(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, "Film successfully change")
 }
+
+func (ah *AppHandler) DeleteFilm(w http.ResponseWriter, r *http.Request) {
+	logNumber := genRandomNumber()
+
+	log.Printf("[INF] [%d] the 'DeleteFilm' handler has started to run", logNumber)
+	defer log.Printf("[INF] [%d] the 'DeleteFilm' handler has finished executing", logNumber)
+
+	if r.Method != http.MethodDelete {
+		log.Printf("[ERR] [%d] The request method must be DELETE", logNumber)
+		http.Error(w, "The request method must be DELETE", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var film storage.Film
+	if err := json.NewDecoder(r.Body).Decode(&film); err != nil {
+		log.Print(e.Wrap(logNumber, "failed to decode json", err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if film.Name == "" || film.ReleaseDate == "" {
+		log.Print(e.Wrap(logNumber, "Required fields (name, release_date) are missing", nil))
+		http.Error(w, "Required fields (name, release_date) are missing", http.StatusBadRequest)
+		return
+	}
+
+	_, err := time.Parse("2006-01-02", film.ReleaseDate)
+	if err != nil {
+		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
+		http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
+
+	if film.ReplaceReleaseDate != "" {
+		_, err = time.Parse("2006-01-02", film.ReplaceReleaseDate)
+		if err != nil {
+			log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
+			http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
+			return
+		}
+	}
+
+	log.Printf("[INF] [%d] start of the function execution DeleteFilm", logNumber)
+	defer log.Printf("[INF] [%d] end of the function execution DeleteFilm", logNumber)
+	if err := ah.DB.DeleteFilm(film, logNumber); err == storage.ErrFilmNotCreated {
+		log.Print(e.Wrap(logNumber, "the film is not in the database", storage.ErrFilmNotCreated))
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	} else if err != nil {
+		log.Print(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "Film successfully deleted")
+}
