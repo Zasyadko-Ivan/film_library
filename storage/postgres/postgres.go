@@ -199,7 +199,7 @@ func (s *Storage) ChangeFilm(film storage.Film, logNumber int) error {
 	if film.ReplaceDescription == "" {
 		film.ReplaceDescription = film.Description
 	}
-	if film.ReplaceRating == 0 {
+	if film.ReplaceRating == "" {
 		film.ReplaceRating = film.Rating
 	}
 
