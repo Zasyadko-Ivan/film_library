@@ -335,7 +335,7 @@ func (s *Storage) DeleteFilmActors(actors []storage.Actor, film storage.Film, lo
 		err = tx.QueryRow(existQuery, id_actor, film.Name, film.ReleaseDate).Scan(&id_film)
 		if err == sql.ErrNoRows {
 			tx.Rollback()
-			return nil
+			return storage.ErrFilmNotActor
 		}
 
 		addQuery := `UPDATE films SET list_actors = array_remove(list_actors, $1) WHERE id = $2;`
