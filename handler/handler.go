@@ -44,10 +44,10 @@ func (ah *AppHandler) AddActor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := time.Parse("02-01-2006", actor.Birthday)
+	_, err := time.Parse("2006-01-02", actor.Birthday)
 	if err != nil {
-		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use DD-MM-YYYY", err))
-		http.Error(w, "Invalid birthday format. Please use DD-MM-YYYY", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
+		http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
 		return
 	}
 	log.Printf("[INF] [%d] start of the function execution AddActor", logNumber)
@@ -91,10 +91,10 @@ func (ah *AppHandler) DeleteActor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := time.Parse("02-01-2006", actor.Birthday)
+	_, err := time.Parse("2006-01-02", actor.Birthday)
 	if err != nil {
-		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use DD-MM-YYYY", err))
-		http.Error(w, "Invalid birthday format. Please use DD-MM-YYYY", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
+		http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
 		return
 	}
 	log.Printf("[INF] [%d] start of the function execution DeleteActor", logNumber)
@@ -138,18 +138,18 @@ func (ah *AppHandler) ChangeActor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := time.Parse("02-01-2006", actor.Birthday)
+	_, err := time.Parse("2006-01-02", actor.Birthday)
 	if err != nil {
-		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use DD-MM-YYYY", err))
-		http.Error(w, "Invalid birthday format. Please use DD-MM-YYYY", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
+		http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
 		return
 	}
 
 	if actor.ReplaceBirthday != "" {
-		_, err = time.Parse("02-01-2006", actor.ReplaceBirthday)
+		_, err = time.Parse("2006-01-02", actor.ReplaceBirthday)
 		if err != nil {
-			log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use DD-MM-YYYY", err))
-			http.Error(w, "Invalid birthday format. Please use DD-MM-YYYY", http.StatusBadRequest)
+			log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
+			http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
 			return
 		}
 	}
