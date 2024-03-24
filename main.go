@@ -30,18 +30,18 @@ func main() {
 	}
 	appHandler := handler.AppHandler{DB: db}
 
-	http.HandleFunc("/actor/create", appHandler.AddActor)
-	http.HandleFunc("/actor/delete", appHandler.DeleteActor)
-	http.HandleFunc("/actor/change", appHandler.ChangeActor)
-	http.HandleFunc("/film/create", appHandler.AddFilm)
-	http.HandleFunc("/film/change", appHandler.ChangeFilm)
-	http.HandleFunc("/film/delete", appHandler.DeleteFilm)
-	http.HandleFunc("/film/add/actors", appHandler.AddFilmActors)
-	http.HandleFunc("/film/remove/actors", appHandler.DeleteFilmActors)
-	http.HandleFunc("/films", appHandler.GetAllFilms)
-	http.HandleFunc("/films/name/film", appHandler.GetFilmsByNameFilm)
-	http.HandleFunc("/films/name/actor", appHandler.GetFilmsByNameActor)
-	http.HandleFunc("/actors", appHandler.GetAllActorOutFilms)
+	http.HandleFunc("/actor/create", appHandler.AdminCheckMiddleware(appHandler.AddActor))
+	http.HandleFunc("/actor/delete", appHandler.AdminCheckMiddleware(appHandler.DeleteActor))
+	http.HandleFunc("/actor/change", appHandler.AdminCheckMiddleware(appHandler.ChangeActor))
+	http.HandleFunc("/film/create", appHandler.AdminCheckMiddleware(appHandler.AddFilm))
+	http.HandleFunc("/film/change", appHandler.AdminCheckMiddleware(appHandler.ChangeFilm))
+	http.HandleFunc("/film/delete", appHandler.AdminCheckMiddleware(appHandler.DeleteFilm))
+	http.HandleFunc("/film/add/actors", appHandler.AdminCheckMiddleware(appHandler.AddFilmActors))
+	http.HandleFunc("/film/remove/actors", appHandler.AdminCheckMiddleware(appHandler.DeleteFilmActors))
+	http.HandleFunc("/films", appHandler.UserCheckMiddleware(appHandler.GetAllFilms))
+	http.HandleFunc("/films/name/film", appHandler.UserCheckMiddleware(appHandler.GetFilmsByNameFilm))
+	http.HandleFunc("/films/name/actor", appHandler.UserCheckMiddleware(appHandler.GetFilmsByNameActor))
+	http.HandleFunc("/actors", appHandler.UserCheckMiddleware(appHandler.GetAllActorOutFilms))
 
 	http.ListenAndServe(":5000", nil)
 

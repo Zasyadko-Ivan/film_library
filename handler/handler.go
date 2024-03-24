@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -577,4 +578,73 @@ func (ah *AppHandler) GetAllActorOutFilms(w http.ResponseWriter, r *http.Request
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(actorsOutFilms)
+}
+
+func (ah *AppHandler) AdminCheckMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logNumber := genRandomNumber()
+		log.Printf("[INF] [%d] the 'AdminCheckMiddleware' middleware has started to run", logNumber)
+		defer log.Printf("[INF] [%d] the 'AdminCheckMiddleware' middleware has finished executing", logNumber)
+		token := extractTokenFromHeader(r)
+
+		if token == "" {
+			log.Print(e.Wrap(logNumber, "No token provided", nil))
+			http.Error(w, "No token provided", http.StatusBadRequest)
+			return
+		}
+
+		right, err := ah.DB.CheckRightFromDB(token, logNumber)
+		if err != nil {
+			log.Print(e.Wrap(logNumber, "the rigth is not in the database", err))
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if right != "admin" {
+			log.Print(e.Wrap(logNumber, "Forbidden. Only admins are allowed to access this resource.", nil))
+			http.Error(w, "Forbidden. Only admins are allowed to access this resource.", http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+}
+
+func (ah *AppHandler) UserCheckMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logNumber := genRandomNumber()
+		token := extractTokenFromHeader(r)
+		log.Printf("[INF] [%d] the 'UserCheckMiddleware' middleware has started to run", logNumber)
+		defer log.Printf("[INF] [%d] the 'UserCheckMiddleware' middleware has finished executing", logNumber)
+
+		if token == "" {
+			log.Print(e.Wrap(logNumber, "No token provided", nil))
+			http.Error(w, "No token provided", http.StatusBadRequest)
+			return
+		}
+
+		right, err := ah.DB.CheckRightFromDB(token, logNumber)
+		if err != nil || (right != "admin" && right != "user") {
+			log.Print(e.Wrap(logNumber, "the rigth is not in the database", err))
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+}
+
+func extractTokenFromHeader(r *http.Request) string {
+	authorizationHeader := r.Header.Get("Authorization")
+
+	if authorizationHeader == "" {
+		return ""
+	}
+
+	parts := strings.Split(authorizationHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return ""
+	}
+
+	return parts[1]
 }

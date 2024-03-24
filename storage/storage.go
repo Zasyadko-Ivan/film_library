@@ -35,6 +35,7 @@ type Storage interface {
 	GetFilmsByNameFilm(nameFilm string, logNumber int) ([]string, error)
 	GetFilmsByNameАctor(nameActor string, logNumber int) ([]string, error)
 	GetAllActorOutFilms(logNumber int) (map[string][]string, error)
+	CheckRightFromDB(token string, logNumber int) (string, error)
 }
 
 var ErrActorCreated = errors.New("the actor has already been created")

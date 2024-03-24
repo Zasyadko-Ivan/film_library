@@ -33,7 +33,8 @@ func (s *Storage) Init() error {
 	log.Print("[INF] the beginning of the initialization of the table")
 
 	q := `CREATE TABLE IF NOT EXISTS actors (id SERIAL PRIMARY KEY, name VARCHAR(50), gender VARCHAR(2), birthday DATE);
-		CREATE TABLE IF NOT EXISTS films (id SERIAL PRIMARY KEY, name VARCHAR(150), description VARCHAR(1000), released DATE, rating DECIMAL(5,2), list_actors INTEGER[]);`
+		CREATE TABLE IF NOT EXISTS films (id SERIAL PRIMARY KEY, name VARCHAR(150), description VARCHAR(1000), released DATE, rating DECIMAL(5,2), list_actors INTEGER[]);
+		CREATE TABLE IF NOT EXISTS user_rights (id SERIAL PRIMARY KEY, user_right VARCHAR(20), token VARCHAR(30))`
 
 	if _, err := s.db.Exec(q); err != nil {
 		return e.Wrap(start, "can't create table", err)
@@ -457,5 +458,19 @@ func (s *Storage) GetAllActorOutFilms(logNumber int) (map[string][]string, error
 	}
 
 	return actorFilms, nil
+
+}
+
+func (s *Storage) CheckRightFromDB(token string, logNumber int) (string, error) {
+	q := `SELECT user_right FROM user_rights WHERE token = $1;`
+	var right string
+
+	err := s.db.QueryRow(q, token).Scan(&right)
+
+	if err != nil {
+		return "", err
+	}
+
+	return right, nil
 
 }
