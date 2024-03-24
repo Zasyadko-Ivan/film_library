@@ -513,3 +513,42 @@ func (ah *AppHandler) GetFilmsByNameFilm(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(nameFilms)
 }
+
+func (ah *AppHandler) GetFilmsByNameActor(w http.ResponseWriter, r *http.Request) {
+	logNumber := genRandomNumber()
+
+	log.Printf("[INF] [%d] the 'GetFilmsByNameActor' handler has started to run", logNumber)
+	defer log.Printf("[INF] [%d] the 'GetFilmsByNameActor' handler has finished executing", logNumber)
+
+	if r.Method != http.MethodGet {
+		log.Printf("[ERR] [%d] The request method must be GET", logNumber)
+		http.Error(w, "The request method must be GET", http.StatusMethodNotAllowed)
+		return
+	}
+	url := r.URL
+	args := url.Query()
+
+	if !args.Has("name_actor") {
+		log.Print(e.Wrap(logNumber, "the 'name_actor' argument is missing", nil))
+		http.Error(w, "the 'name_actor' argument is missing", http.StatusBadRequest)
+		return
+	}
+
+	nameActor := args.Get("name_actor")
+
+	log.Printf("[INF] [%d] start of the function execution GetFilmsByNameАctor", logNumber)
+	defer log.Printf("[INF] [%d] end of the function execution GetFilmsByNameАctor", logNumber)
+
+	films, err := ah.DB.GetFilmsByNameАctor(nameActor, logNumber)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	nameFilms := make(map[string][]string)
+	nameFilms["name_films"] = films
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(nameFilms)
+}
