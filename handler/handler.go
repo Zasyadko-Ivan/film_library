@@ -456,7 +456,7 @@ func (ah *AppHandler) GetAllFilms(w http.ResponseWriter, r *http.Request) {
 	url := r.URL
 	args := url.Query()
 
-	sortByColoms := args.Get("sortByColoms")
+	sortByColoms := args.Get("sort_by_coloms")
 	direction := args.Get("direction")
 
 	log.Printf("[INF] [%d] start of the function execution GetAllFilms", logNumber)
