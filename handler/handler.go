@@ -552,3 +552,29 @@ func (ah *AppHandler) GetFilmsByNameActor(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(nameFilms)
 }
+
+func (ah *AppHandler) GetAllActorOutFilms(w http.ResponseWriter, r *http.Request) {
+	logNumber := genRandomNumber()
+
+	log.Printf("[INF] [%d] the 'GetFilmsByNameActor' handler has started to run", logNumber)
+	defer log.Printf("[INF] [%d] the 'GetFilmsByNameActor' handler has finished executing", logNumber)
+
+	if r.Method != http.MethodGet {
+		log.Printf("[ERR] [%d] The request method must be GET", logNumber)
+		http.Error(w, "The request method must be GET", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("[INF] [%d] start of the function execution GetAllActorOutFilms", logNumber)
+	defer log.Printf("[INF] [%d] end of the function execution GetAllActorOutFilms", logNumber)
+
+	actorsOutFilms, err := ah.DB.GetAllActorOutFilms(logNumber)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(actorsOutFilms)
+}

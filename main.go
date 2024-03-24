@@ -41,6 +41,7 @@ func main() {
 	http.HandleFunc("/films", appHandler.GetAllFilms)
 	http.HandleFunc("/films/name/film", appHandler.GetFilmsByNameFilm)
 	http.HandleFunc("/films/name/actor", appHandler.GetFilmsByNameActor)
+	http.HandleFunc("/actors", appHandler.GetAllActorOutFilms)
 
 	http.ListenAndServe(":5000", nil)
 
