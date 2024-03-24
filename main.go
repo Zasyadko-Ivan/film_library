@@ -1,6 +1,7 @@
 package main
 
 import (
+	"film_library/config"
 	"film_library/handler"
 	"film_library/storage/postgres"
 	"fmt"
@@ -8,16 +9,10 @@ import (
 	"net/http"
 )
 
-const (
-	host     = "db"
-	port     = 5432
-	user     = "root"
-	password = "root"
-	dbname   = "root"
-)
-
 func main() {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	config := config.ReadConfig()
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DB.Host, config.DB.Port, config.DB.User, config.DB.Password, config.DB.DBname)
 	db, err := postgres.ConnectToDB(psqlInfo)
 	if err != nil {
 		log.Fatal(err)
