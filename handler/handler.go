@@ -588,21 +588,21 @@ func (ah *AppHandler) AdminCheckMiddleware(next http.HandlerFunc) http.HandlerFu
 		token := extractTokenFromHeader(r)
 
 		if token == "" {
-			log.Print(e.Wrap(logNumber, "No token provided", nil))
-			http.Error(w, "No token provided", http.StatusBadRequest)
+			log.Print(e.Wrap(logNumber, TokenNotFound, nil))
+			http.Error(w, TokenNotFound, http.StatusBadRequest)
 			return
 		}
 
 		right, err := ah.DB.CheckRightFromDB(token, logNumber)
 		if err != nil {
 			log.Print(e.Wrap(logNumber, "the rigth is not in the database", err))
-			http.Error(w, "invalid token", http.StatusUnauthorized)
+			http.Error(w, TokenInvalid, http.StatusUnauthorized)
 			return
 		}
 
 		if right != "admin" {
-			log.Print(e.Wrap(logNumber, "Forbidden. Only admins are allowed to access this resource.", nil))
-			http.Error(w, "Forbidden. Only admins are allowed to access this resource.", http.StatusForbidden)
+			log.Print(e.Wrap(logNumber, OnlyAdmin, nil))
+			http.Error(w, OnlyAdmin, http.StatusForbidden)
 			return
 		}
 
