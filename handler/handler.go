@@ -27,44 +27,44 @@ func (ah *AppHandler) AddActor(w http.ResponseWriter, r *http.Request) {
 	defer log.Printf("[INF] [%d] the 'AddActor' handler has finished executing", logNumber)
 
 	if r.Method != http.MethodPost {
-		log.Printf("[ERR] [%d] The request method must be POST", logNumber)
-		http.Error(w, "The request method must be POST", http.StatusMethodNotAllowed)
+		log.Printf("[ERR] [%d] %s", logNumber, MustPOST)
+		http.Error(w, MustPOST, http.StatusMethodNotAllowed)
 		return
 	}
 
 	var actor storage.Actor
 	if err := json.NewDecoder(r.Body).Decode(&actor); err != nil {
 		log.Print(e.Wrap(logNumber, "failed to decode json", err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, ServerError, http.StatusInternalServerError)
 		return
 	}
 
 	if actor.Name == "" || actor.Gender == "" || actor.Birthday == "" {
-		log.Print(e.Wrap(logNumber, "Required fields (name, gender, birthday) are missing", nil))
-		http.Error(w, "Required fields (name, gender, birthday) are missing", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, MissingRequiredFieldsActor, nil))
+		http.Error(w, MissingRequiredFieldsActor, http.StatusBadRequest)
 		return
 	}
 
 	_, err := time.Parse("2006-01-02", actor.Birthday)
 	if err != nil {
-		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
-		http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, InvalidBirthday, err))
+		http.Error(w, InvalidBirthday, http.StatusBadRequest)
 		return
 	}
 	log.Printf("[INF] [%d] start of the function execution AddActor", logNumber)
 	defer log.Printf("[INF] [%d] end of the function execution AddActor", logNumber)
 	if err := ah.DB.AddActor(actor, logNumber); err == storage.ErrActorCreated {
 		log.Print(e.Wrap(logNumber, "can't add actor to database", storage.ErrActorCreated))
-		http.Error(w, err.Error(), http.StatusConflict)
+		http.Error(w, ErrActorCreated, http.StatusConflict)
 		return
 	} else if err != nil {
 		log.Print(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, ServerError, http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprint(w, "Actor successfully create")
+	fmt.Fprint(w, ActorCreated)
 }
 
 func (ah *AppHandler) DeleteActor(w http.ResponseWriter, r *http.Request) {
