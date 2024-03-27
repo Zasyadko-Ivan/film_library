@@ -162,44 +162,44 @@ func (ah *AppHandler) AddFilm(w http.ResponseWriter, r *http.Request) {
 	defer log.Printf("[INF] [%d] the 'AddFilm' handler has finished executing", logNumber)
 
 	if r.Method != http.MethodPost {
-		log.Printf("[ERR] [%d] The request method must be POST", logNumber)
-		http.Error(w, "The request method must be POST", http.StatusMethodNotAllowed)
+		log.Printf("[ERR] [%d] %s", logNumber, MustPOST)
+		http.Error(w, MustPOST, http.StatusMethodNotAllowed)
 		return
 	}
 
 	var film storage.Film
 	if err := json.NewDecoder(r.Body).Decode(&film); err != nil {
 		log.Print(e.Wrap(logNumber, "failed to decode json", err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, ServerError, http.StatusInternalServerError)
 		return
 	}
 
 	if film.Name == "" || film.ReleaseDate == "" {
-		log.Print(e.Wrap(logNumber, "Required fields (name, release_date) are missing", nil))
-		http.Error(w, "Required fields (name, release_date) are missing", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, MissingRequiredFieldsFilm, nil))
+		http.Error(w, MissingRequiredFieldsFilm, http.StatusBadRequest)
 		return
 	}
 
 	_, err := time.Parse("2006-01-02", film.ReleaseDate)
 	if err != nil {
-		log.Print(e.Wrap(logNumber, "Invalid release date format. Please use YYYY-MM-DD", err))
-		http.Error(w, "Invalid date format format. Please use YYYY-MM-DD", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, InvalidReleaseDate, err))
+		http.Error(w, InvalidReleaseDate, http.StatusBadRequest)
 		return
 	}
 	log.Printf("[INF] [%d] start of the function execution AddFilm", logNumber)
 	defer log.Printf("[INF] [%d] end of the function execution AddFilm", logNumber)
 	if err := ah.DB.AddFilm(film, logNumber); err == storage.ErrFilmCreated {
 		log.Print(e.Wrap(logNumber, "can't add film to database", storage.ErrFilmCreated))
-		http.Error(w, err.Error(), http.StatusConflict)
+		http.Error(w, ErrFilmCreated, http.StatusConflict)
 		return
 	} else if err != nil {
 		log.Print(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, ServerError, http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprint(w, "Film successfully create")
+	fmt.Fprint(w, FilmCreated)
 }
 
 func (ah *AppHandler) ChangeFilm(w http.ResponseWriter, r *http.Request) {
