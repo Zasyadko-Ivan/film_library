@@ -618,15 +618,15 @@ func (ah *AppHandler) UserCheckMiddleware(next http.HandlerFunc) http.HandlerFun
 		defer log.Printf("[INF] [%d] the 'UserCheckMiddleware' middleware has finished executing", logNumber)
 
 		if token == "" {
-			log.Print(e.Wrap(logNumber, "No token provided", nil))
-			http.Error(w, "No token provided", http.StatusBadRequest)
+			log.Print(e.Wrap(logNumber, TokenNotFound, nil))
+			http.Error(w, TokenNotFound, http.StatusBadRequest)
 			return
 		}
 
 		right, err := ah.DB.CheckRightFromDB(token, logNumber)
 		if err != nil || (right != "admin" && right != "user") {
 			log.Print(e.Wrap(logNumber, "the rigth is not in the database", err))
-			http.Error(w, "invalid token", http.StatusUnauthorized)
+			http.Error(w, TokenInvalid, http.StatusUnauthorized)
 			return
 		}
 
