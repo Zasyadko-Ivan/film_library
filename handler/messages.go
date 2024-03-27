@@ -16,6 +16,7 @@ const (
 
 const (
 	InvalidBirthday           = "Invalid birthday format. Please use YYYY-MM-DD."
+	InvalidReleaseBirthday    = "Invalid replace_birthday format. Please use YYYY-MM-DD."
 	InvalidReleaseDate        = "Invalid release_date format. Please use YYYY-MM-DD."
 	InvalidReplaceReleaseDate = "Invalid replace_release_date format. Please use YYYY-MM-DD."
 )

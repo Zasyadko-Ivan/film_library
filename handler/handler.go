@@ -101,8 +101,8 @@ func (ah *AppHandler) ChangeActor(w http.ResponseWriter, r *http.Request) {
 	defer log.Printf("[INF] [%d] the 'ChangeActor' handler has finished executing", logNumber)
 
 	if r.Method != http.MethodPut {
-		log.Printf("[ERR] [%d] The request method must be PUT", logNumber)
-		http.Error(w, "The request method must be PUT", http.StatusMethodNotAllowed)
+		log.Printf("[ERR] [%d] %s", logNumber, MustPUT)
+		http.Error(w, MustPUT, http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -114,23 +114,23 @@ func (ah *AppHandler) ChangeActor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if actor.Name == "" || actor.Gender == "" || actor.Birthday == "" {
-		log.Print(e.Wrap(logNumber, "Required fields (name, gender, birthday) are missing", nil))
-		http.Error(w, "Required fields (name, gender, birthday) are missing", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, MissingRequiredFieldsActor, nil))
+		http.Error(w, MissingRequiredFieldsActor, http.StatusBadRequest)
 		return
 	}
 
 	_, err := time.Parse("2006-01-02", actor.Birthday)
 	if err != nil {
-		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
-		http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
+		log.Print(e.Wrap(logNumber, InvalidBirthday, err))
+		http.Error(w, InvalidBirthday, http.StatusBadRequest)
 		return
 	}
 
 	if actor.ReplaceBirthday != "" {
 		_, err = time.Parse("2006-01-02", actor.ReplaceBirthday)
 		if err != nil {
-			log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
-			http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
+			log.Print(e.Wrap(logNumber, InvalidReleaseBirthday, err))
+			http.Error(w, InvalidReleaseBirthday, http.StatusBadRequest)
 			return
 		}
 	}
@@ -139,20 +139,20 @@ func (ah *AppHandler) ChangeActor(w http.ResponseWriter, r *http.Request) {
 	defer log.Printf("[INF] [%d] end of the function execution ChangeActor", logNumber)
 	if err := ah.DB.ChangeActor(actor, logNumber); err == storage.ErrActorNotCreated {
 		log.Print(e.Wrap(logNumber, "the actor is not in the database", storage.ErrActorNotCreated))
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, ErrActorNotCreated, http.StatusBadRequest)
 		return
 	} else if err == storage.ErrActorCreated {
 		log.Print(e.Wrap(logNumber, "can't change actor to database", storage.ErrActorCreated))
-		http.Error(w, err.Error(), http.StatusConflict)
+		http.Error(w, ErrActorCreated, http.StatusConflict)
 		return
 	} else if err != nil {
 		log.Print(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, ServerError, http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "Actor successfully change")
+	fmt.Fprint(w, ActorChange)
 }
 
 func (ah *AppHandler) AddFilm(w http.ResponseWriter, r *http.Request) {
