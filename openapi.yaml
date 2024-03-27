@@ -120,6 +120,13 @@ paths:
               schema:
                 type: string
                 example: The request method must be PUT.
+        '409':
+          description: Актер уже создан
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: This actor has already been added to the database.
         '500':
           description: Ошибки на стороне сервера
           content:
@@ -150,6 +157,185 @@ paths:
                 schema:
                   type: string
                   example: Actor successfully delete.
+          '401':
+            description: Пользователь не прошел авторизацию
+            content:
+              text/plains:
+                schema:
+                  type: string
+                  example: Invalid token.
+          '403':
+            description: Доступ к этому ресурсу разрешен только администраторам
+            content:
+              text/plains:
+                schema:
+                  type: string
+                  example: Forbidden. Only admins are allowed to access this resource.
+          '405':
+            description: Отправлен не DELETE запрос 
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: The request method must be DELETE.
+          '500':
+            description: Ошибки на стороне сервера
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: Internal Server Error.
+  /film/create:
+    post:
+      summary: Метод создания фильма
+      tags:
+        - Film
+      operationId: createFilm
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/Film"
+      responses: 
+        '201':
+          description: Успешное создание фильма
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Film successfully create.
+        '400':
+          description: Не верно составленный запрос
+          content:
+            text/plains:
+              schema:
+                type: string
+                example: Invalid release_date format. Please use YYYY-MM-DD. Or Required fields (name_film, release_date) are missing. Or Token not found.
+        '401':
+          description: Пользователь не прошел авторизацию
+          content:
+            text/plains:
+              schema:
+                type: string
+                example: Invalid token.
+        '403':
+          description: Доступ к этому ресурсу разрешен только администраторам
+          content:
+            text/plains:
+              schema:
+                type: string
+                example: Forbidden. Only admins are allowed to access this resource.
+        '405':
+          description: Отправлен не POST запрос 
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: The request method must be POST.
+        '409':
+          description: Фильм уже создан
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: This film has already been added to the database.
+        '500':
+          description: Ошибки на стороне сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal Server Error.
+  /film/put:
+    put:
+      summary: Метод изменения фильма
+      tags:
+        - Film
+      operationId: changeFilm
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/Replace_Film"
+      responses: 
+        '200':
+          description: Успешное изменен фильм
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Film successfully change.
+        '400':
+          description: Не верно составленный запрос
+          content:
+            text/plains:
+              schema:
+                type: string
+                example: Required fields (name_film, release_date) are missing. Or Invalid release_date format. Please use YYYY-MM-DD. Or Invalid replace_release_date format. Please use YYYY-MM-DD. Or Token not found.
+        '401':
+          description: Пользователь не прошел авторизацию
+          content:
+            text/plains:
+              schema:
+                type: string
+                example: Invalid token.
+        '403':
+          description: Доступ к этому ресурсу разрешен только администраторам
+          content:
+            text/plains:
+              schema:
+                type: string
+                example: Forbidden. Only admins are allowed to access this resource.
+        '405':
+          description: Отправлен не PUT запрос 
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: The request method must be PUT.
+        '409':
+          description: Фильм уже создан
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: This film has already been added to the database.
+        '500':
+          description: Ошибки на стороне сервера
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Internal Server Error.
+  /film/delete/{filmId}:
+      delete:
+        summary: Метод изменения фильма
+        tags:
+          - Film
+        operationId: deleteFilm
+        security:
+          - BearerAuth: []
+        parameters:
+          - in: path
+            name: filmId
+            required: true
+            schema:
+              type: integer
+            description: Уникальный ID фильма
+        responses: 
+          '200':
+            description: Успешное удален фильм
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  example: Film successfully delete.
           '401':
             description: Пользователь не прошел авторизацию
             content:
@@ -229,10 +415,10 @@ components:
     Film:
       type: object
       required:
-        - name
+        - name_film
         - release_date
       properties:
-        name:
+        name_film:
           type: string
           example: Большой куш
         description:
@@ -248,9 +434,40 @@ components:
           type: array
           items: 
             $ref: "#/components/schemas/Actor"
+    Replace_Film:
+      type: object
+      required:
+        - name_film
+        - release_date
+      properties:
+        name_film:
+          type: string
+          example: Большой куш
+        description:
+          type: string
+          example: В Антверпене банда грабителей, переодетых в религиозных евреев, один из которых — Фрэнки (Бенисио дель Торо), похищает из еврейской ювелирной конторы множество драгоценностей, среди которых бриллиант в 86 карат.
+        rating:
+          type: string
+          example: 8.6
+        release_date:
+          type: string
+          example: 2000-09-01
+        actors:
+          type: array
+          items: 
+            $ref: "#/components/schemas/Actor"
+        replace_description:
+          type: string
+          example: Фрэнки Четыре Пальца должен был переправить краденый алмаз из Англии в США своему боссу Эви, но, сделав ставку на подпольный боксерский поединок, он попал в круговорот весьма нежелательных событий.
+        replace_rating:
+          type: string
+          example: 8.8
+        replace_release_date:
+          type: string
+          example: 2000-12-06  
         
         
-        
+  
         
         
         
