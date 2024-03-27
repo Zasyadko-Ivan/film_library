@@ -74,44 +74,24 @@ func (ah *AppHandler) DeleteActor(w http.ResponseWriter, r *http.Request) {
 	defer log.Printf("[INF] [%d] the 'DeleteActor' handler has finished executing", logNumber)
 
 	if r.Method != http.MethodDelete {
-		log.Printf("[ERR] [%d] The request method must be DELETE", logNumber)
-		http.Error(w, "The request method must be DELETE", http.StatusMethodNotAllowed)
+		log.Printf("[ERR] [%d] %s", logNumber, MustDELETE)
+		http.Error(w, MustDELETE, http.StatusMethodNotAllowed)
 		return
 	}
 
-	var actor storage.Actor
-	if err := json.NewDecoder(r.Body).Decode(&actor); err != nil {
-		log.Print(e.Wrap(logNumber, "failed to decode json", err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	parts := strings.Split(r.URL.Path, "/")
+	actorID := parts[len(parts)-1]
 
-	if actor.Name == "" || actor.Gender == "" || actor.Birthday == "" {
-		log.Print(e.Wrap(logNumber, "Required fields (name, gender, birthday) are missing", nil))
-		http.Error(w, "Required fields (name, gender, birthday) are missing", http.StatusBadRequest)
-		return
-	}
-
-	_, err := time.Parse("2006-01-02", actor.Birthday)
-	if err != nil {
-		log.Print(e.Wrap(logNumber, "Invalid birthday format. Please use YYYY-MM-DD", err))
-		http.Error(w, "Invalid birthday format. Please use YYYY-MM-DD", http.StatusBadRequest)
-		return
-	}
-	log.Printf("[INF] [%d] start of the function execution DeleteActor", logNumber)
+	log.Printf("[INF] [%d] start of the function execution DeleteActor actorID = %s", logNumber, actorID)
 	defer log.Printf("[INF] [%d] end of the function execution DeleteActor", logNumber)
-	if err := ah.DB.DeleteActor(actor, logNumber); err == storage.ErrActorNotCreated {
-		log.Print(e.Wrap(logNumber, "the actor is not in the database", storage.ErrActorNotCreated))
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	} else if err != nil {
+	if err := ah.DB.DeleteActor(actorID, logNumber); err != nil {
 		log.Print(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, ServerError, http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "Actor successfully deleted")
+	fmt.Fprint(w, ActorDeleted)
 }
 
 func (ah *AppHandler) ChangeActor(w http.ResponseWriter, r *http.Request) {

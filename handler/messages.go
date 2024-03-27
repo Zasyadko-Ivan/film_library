@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	MissingRequiredFieldsActor = "Required fields (name, gender, birthday) are missing."
+	MissingRequiredFieldsActor = "Required fields (name_actor, gender, birthday) are missing."
 	MissingRequiredFieldsFilm  = "Required fields (name, release_date) are missing."
 )
 

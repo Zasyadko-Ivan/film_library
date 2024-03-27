@@ -97,34 +97,20 @@ func (s *Storage) ChangeActor(actor storage.Actor, logNumber int) error {
 	return nil
 }
 
-func (s *Storage) DeleteActor(actor storage.Actor, logNumber int) error {
-	exists, err := s.checkActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
-	if err != nil {
-		return err
-	}
-
-	if !exists {
-		return storage.ErrActorNotCreated
-	}
-
-	id, err := s.idActor(actor.Name, actor.Gender, actor.Birthday, logNumber)
-	if err != nil {
-		return err
-	}
-
+func (s *Storage) DeleteActor(actorID string, logNumber int) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return e.Wrap(logNumber, "can't start transaction", err)
 	}
 
 	q := `UPDATE films SET list_actors = array_remove(list_actors, $1)`
-	if _, err := tx.Exec(q, id); err != nil {
+	if _, err := tx.Exec(q, actorID); err != nil {
 		tx.Rollback()
 		return e.Wrap(logNumber, "can't update films table", err)
 	}
 
-	q = `DELETE FROM actors WHERE name = $1 AND gender = $2 AND birthday = $3`
-	if _, err := tx.Exec(q, actor.Name, actor.Gender, actor.Birthday); err != nil {
+	q = `DELETE FROM actors WHERE id = $1`
+	if _, err := tx.Exec(q, actorID); err != nil {
 		tx.Rollback()
 		return e.Wrap(logNumber, "can't delete actor from actors table", err)
 	}

@@ -26,7 +26,7 @@ func main() {
 	appHandler := handler.AppHandler{DB: db}
 
 	http.HandleFunc("/actor/create", appHandler.AdminCheckMiddleware(appHandler.AddActor))
-	http.HandleFunc("/actor/delete", appHandler.AdminCheckMiddleware(appHandler.DeleteActor))
+	http.HandleFunc("/actor/delete/", appHandler.AdminCheckMiddleware(appHandler.DeleteActor))
 	http.HandleFunc("/actor/change", appHandler.AdminCheckMiddleware(appHandler.ChangeActor))
 	http.HandleFunc("/film/create", appHandler.AdminCheckMiddleware(appHandler.AddFilm))
 	http.HandleFunc("/film/change", appHandler.AdminCheckMiddleware(appHandler.ChangeFilm))
