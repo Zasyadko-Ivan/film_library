@@ -30,7 +30,7 @@ type Storage interface {
 	DeleteFilmActors(actor []Actor, film Film, logNumber int) error
 	AddFilm(film Film, logNumber int) error
 	ChangeFilm(film Film, logNumber int) error
-	DeleteFilm(film Film, logNumber int) error
+	DeleteFilm(filmID string, logNumber int) error
 	GetAllFilms(sortByColoms, direction string, logNumber int) ([]string, error)
 	GetFilmsByNameFilm(nameFilm string, logNumber int) ([]string, error)
 	GetFilmsByNameАctor(nameActor string, logNumber int) ([]string, error)

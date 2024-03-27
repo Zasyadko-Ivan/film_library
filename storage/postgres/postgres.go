@@ -204,18 +204,9 @@ func (s *Storage) ChangeFilm(film storage.Film, logNumber int) error {
 	return nil
 }
 
-func (s *Storage) DeleteFilm(film storage.Film, logNumber int) error {
-	exists, err := s.checkFilm(film.Name, film.ReleaseDate, logNumber)
-	if err != nil {
-		return err
-	}
-
-	if !exists {
-		return storage.ErrFilmNotCreated
-	}
-
-	q := `DELETE FROM films WHERE name = $1 AND released = $2;`
-	if _, err := s.db.Exec(q, film.Name, film.ReleaseDate); err != nil {
+func (s *Storage) DeleteFilm(filmID string, logNumber int) error {
+	q := `DELETE FROM films WHERE id = $1;`
+	if _, err := s.db.Exec(q, filmID); err != nil {
 		return e.Wrap(logNumber, "can't delete film to database", err)
 	}
 	return nil

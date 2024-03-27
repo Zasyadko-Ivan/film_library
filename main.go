@@ -30,7 +30,7 @@ func main() {
 	http.HandleFunc("/actor/change", appHandler.AdminCheckMiddleware(appHandler.ChangeActor))
 	http.HandleFunc("/film/create", appHandler.AdminCheckMiddleware(appHandler.AddFilm))
 	http.HandleFunc("/film/change", appHandler.AdminCheckMiddleware(appHandler.ChangeFilm))
-	http.HandleFunc("/film/delete", appHandler.AdminCheckMiddleware(appHandler.DeleteFilm))
+	http.HandleFunc("/film/delete/", appHandler.AdminCheckMiddleware(appHandler.DeleteFilm))
 	http.HandleFunc("/film/add/actors", appHandler.AdminCheckMiddleware(appHandler.AddFilmActors))
 	http.HandleFunc("/film/remove/actors", appHandler.AdminCheckMiddleware(appHandler.DeleteFilmActors))
 	http.HandleFunc("/films", appHandler.UserCheckMiddleware(appHandler.GetAllFilms))
